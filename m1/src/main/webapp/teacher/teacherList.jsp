@@ -1,61 +1,60 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="dao.*" %>
-<%@ page import="vo.*" %>
 <%@ page import="java.util.*" %>
 <%
-	//컨트롤러 계층: 요청값 currentPage(int), rowPerPage(int)
-	//요청값 유효성검사: 요청값이 null이 아니면 해당 값을 변수에 저장하고 아니면 null이거나 공백이면 초기값
+	//요청값(currentPage, rowPerPage)
+	//요청값이 잘 넘어오는지 확인하기
+	System.out.println(request.getParameter("currentPage") + " <--teacherList param currentPage");
+	System.out.println(request.getParameter("rowPerPage") + " <--teacherList param rowPerPage");
+	
 	int currentPage = 1;
 	int rowPerPage = 10;
-	if(request.getParameter("currentPage") != null && request.getParameter("rowPerPage") != null
-			&& !request.getParameter("currentPage").equals("") && !request.getParameter("rowPerPage").equals("")){
+	if(request.getParameter("currentPage") != null || request.getParameter("rowPerPage") != null){
 		currentPage = Integer.parseInt(request.getParameter("currentPage"));
 		rowPerPage = Integer.parseInt(request.getParameter("rowPerPage"));
 	}
-	//디버깅
-	System.out.println(currentPage + " <--subjectList currentPage");
-	System.out.println(rowPerPage + " <--subjectList rowPerPage");
-	
+	System.out.println(currentPage + " <--teacherList currentPage");
+	System.out.println(currentPage + " <--teacherList rowPerPage");
 	int beginRow = (currentPage-1)*rowPerPage;
-	SubjectDao subjectDao = new SubjectDao();
-	ArrayList<Subject> list = subjectDao.selectSubjectListByPage(beginRow, rowPerPage); //list를 불러오는 메서드사용
-	System.out.println(list.size() + " <--subjectList list.size()");
+	
+	TeacherDao tDao = new TeacherDao();
+	ArrayList<HashMap<String, Object>> list = tDao.selectTeacherListByPage(beginRow, rowPerPage); //list불러오는 메서드
 	
 	//페이지네이션
 	//페이징에 필요한 변수: totalRow, lastPage, pagePerPage, startPage, endPage
-	int totalRow = subjectDao.selectSubjectCnt();
-	System.out.println(totalRow + " <--subjectList totalRow");
+	int totalRow = tDao.selectTeacherCnt();
+	System.out.println(totalRow + " <--teacherList totalRow");
 	int lastPage = totalRow / rowPerPage;
 	if(totalRow % rowPerPage != 0){ //총행의 수가 rowPerPage로 나누어 떨어지지 않으면 마지막 페이지는 +1
 		lastPage = lastPage + 1;
 	}
-	System.out.println(lastPage + " <--subjectList lastPage");
+	System.out.println(lastPage + " <--teacherList lastPage");
 	int pagePerPage = 10;
 	int startPage = ((currentPage-1)/pagePerPage)*pagePerPage + 1;
 	int endPage = startPage + pagePerPage - 1;
 	if(endPage > lastPage){
 		endPage = lastPage;
 	}
-	System.out.println(startPage + " <--subjectList startPage");
-	System.out.println(endPage + " <--subjectList endPage");
+	System.out.println(startPage + " <--teacherList startPage");
+	System.out.println(endPage + " <--teacherList endPage");
 %>
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>subject list</title>
+	<title>teacher list</title>
 	<!-- 부트스트랩5 -->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 <div class="container">
-	<!-- 과목목록보기 -->
+	<!-- 강사목록보기 -->
 	<div>
 		<jsp:include page="/inc/menu.jsp"></jsp:include>
 	</div>
-	
-	<h1>과목목록</h1>
+	<!-- -------------------------------------------강사목록시작----------------------------------------- -->
+	<h1>강사목록</h1>
 	
 	<!-- 리다이렉션 메시지 -->
 	<%
@@ -66,11 +65,10 @@
 		}
 	%>
 	
-	<!----------------------------------------과목 목록 시작------------------------------------------------>
 	<!-- rowPerPage 선택 -->
 	<div class="d-flex flex-row-reverse">
 	<div class="p-2">
-	<form action="<%=request.getContextPath()%>/subject/subjectList.jsp">
+	<form action="<%=request.getContextPath()%>/teacher/teacherList.jsp">
 		<input type="hidden" name="currentPage" value=<%=currentPage%>><!-- 현재페이지값 함께 넘기기 -->
 		<select name="rowPerPage"><!-- 선택사항에 따라 select 속성 주기 -->
 			<%
@@ -104,48 +102,44 @@
 	</form>
 	</div>
 	
-	<!-- 과목추가 버튼 -->
+	<!-- 강사추가 버튼 -->
 	<div class="p-2">
-		<a class="btn btn-primary" href="<%=request.getContextPath()%>/subject/addSubject.jsp">과목추가</a>
+		<a class="btn btn-primary" href="<%=request.getContextPath()%>/teacher/addTeacher.jsp">강사추가</a>
 	</div>
 	</div>
 	
-	<!-- 과목목록 -->
-	<div>
+	<!-- 강사목록 -->
 	<table class="table table-bordered table-hover">
 		<thead>
 			<tr>
-				<th>과목번호</th>
-				<th>과목이름</th>
-				<th>과목시수</th>
-				<th>수정일</th>
-				<th>등록일</th>
+				<th>강사번호</th>
+				<th>강사ID</th>
+				<th>강사이름</th>
+				<th>담당과목</th>
 			</tr>
 		</thead>
 		<%
-			for(Subject s : list){
+			for(HashMap<String, Object> m : list){
 		%>
 				<tr>
-					<td><%=(Integer)s.getSubjectNo()%></td>
-					<td>
-						<a href="<%=request.getContextPath()%>/subject/subjectOne.jsp?subjectNo=<%=s.getSubjectNo()%>"><%=(String)s.getSubjectName()%></a>	
+					<td><%=(Integer)m.get("teacherNo")%></td>
+					<td><%=(String)m.get("teacherId")%></td>
+					<td><!-- 강사상세페이지로 연결 -->
+						<a href="<%=request.getContextPath()%>/teacher/teacherOne.jsp?teacherNo=<%=m.get("teacherNo")%>"><%=(String)m.get("teacherName")%></a>
 					</td>
-					<td><%=(Integer)s.getSubjectTime()%></td>
-					<td><%=(String)s.getUpdatedate()%></td>
-					<td><%=(String)s.getCreatedate()%></td>
+					<td><%=(String)m.get("subjectName")%></td>
 				</tr>
 		<%
 			}
 		%>
 	</table>
-	</div>
 	
 	<!-- 페이지네이션(처음-이전-현제페이지-다음-마지막) -->
 	<div class="d-flex justify-content-center">
 	<ul class="pagination">
 		<!-- 처음버튼 -->
 		<li class="page-item">
-			<a class="page-link" href="<%=request.getContextPath()%>/subject/subjectList.jsp?currentPage=1&rowPerPage=<%=rowPerPage%>">처음</a>
+			<a class="page-link" href="<%=request.getContextPath()%>/teacher/teacherList.jsp?currentPage=1&rowPerPage=<%=rowPerPage%>">처음</a>
 		</li>
 		<!-- 이전버튼 -->
 		<%
@@ -158,7 +152,7 @@
 			} else {
 		%>
 				<li class="page-item">
-					<a class="page-link" href="<%=request.getContextPath()%>/subject/subjectList.jsp?currentPage=<%=startPage-1%>&rowPerPage=<%=rowPerPage%>">이전</a>
+					<a class="page-link" href="<%=request.getContextPath()%>/teacher/teacherList.jsp?currentPage=<%=startPage-1%>&rowPerPage=<%=rowPerPage%>">이전</a>
 				</li>
 		<%
 			}
@@ -169,13 +163,13 @@
 				if(i == currentPage){ //현재페이지에서는 표시하기
 		%>
 					<li class="page-item active">
-						<a class="page-link" href="<%=request.getContextPath()%>/subject/subjectList.jsp?currentPage=<%=i%>&rowPerPage=<%=rowPerPage%>"><%=i%></a>
+						<a class="page-link" href="<%=request.getContextPath()%>/teacher/teacherList.jsp?currentPage=<%=i%>&rowPerPage=<%=rowPerPage%>"><%=i%></a>
 					</li>
 		<%
 				} else {
 		%>
 					<li class="page-item">
-						<a class="page-link" href="<%=request.getContextPath()%>/subject/subjectList.jsp?currentPage=<%=i%>&rowPerPage=<%=rowPerPage%>"><%=i%></a>
+						<a class="page-link" href="<%=request.getContextPath()%>/teacher/teacherList.jsp?currentPage=<%=i%>&rowPerPage=<%=rowPerPage%>"><%=i%></a>
 					</li>
 		<%
 				}
@@ -193,18 +187,18 @@
 			} else {
 		%>
 				<li class="page-item">
-					<a class="page-link" href="<%=request.getContextPath()%>/subject/subjectList.jsp?currentPage=<%=endPage+1%>&rowPerPage=<%=rowPerPage%>">다음</a>
+					<a class="page-link" href="<%=request.getContextPath()%>/teacher/teacherList.jsp?currentPage=<%=endPage+1%>&rowPerPage=<%=rowPerPage%>">다음</a>
 				</li>
 		<%
 			}
 		%>
 		<!-- 마지막버튼 -->
 		<li class="page-item">
-			<a class="page-link" href="<%=request.getContextPath()%>/subject/subjectList.jsp?currentPage=<%=lastPage%>&rowPerPage=<%=rowPerPage%>">마지막</a>
+			<a class="page-link" href="<%=request.getContextPath()%>/teacher/teacherList.jsp?currentPage=<%=lastPage%>&rowPerPage=<%=rowPerPage%>">마지막</a>
 		</li>
 	</ul>
 	</div>
-	<!----------------------------------------과목 목록 끝------------------------------------------------>
+	<!-- -------------------------------------------강사목록끝----------------------------------------- -->
 </div>
 </body>
 </html>

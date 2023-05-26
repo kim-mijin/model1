@@ -23,39 +23,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>modify subject</title>
+	<meta charset="UTF-8">
+	<title>modify subject</title>
+	<!-- 부트스트랩5 -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-	<h1>과목목록</h1>
+<div class="container">
 	<!-- 과목목록보기 -->
 	<div>
-		<a href="<%=request.getContextPath()%>/subject/subjectList.jsp">과목목록보기</a>
+		<jsp:include page="/inc/menu.jsp"></jsp:include>
 	</div>
 	
 	<h1>과목 수정하기</h1>
+	
 	<!-- 리다이렉션 메시지 -->
 	<%
 		if(request.getParameter("msg") != null){
 	%>
-			<%=request.getParameter("msg")%>
+			<div class="alert alert-primary"><%=request.getParameter("msg")%></div>
 	<%
 		}
 	%>
 	
 	<!-- 수정폼 -->
 	<form action="<%=request.getContextPath()%>/subject/modifySubjectAction.jsp" method="post">
-		<table>
+		<table class="table">
 			<tr>
-				<th>번호</th>
+				<th>과목번호</th>
 				<td><input type="number" value="<%=subject.getSubjectNo()%>" name="subjectNo" readonly></td>
 			</tr>
 			<tr>
-				<th>이름</th>
+				<th>과목이름</th>
 				<td><input type="text" value="<%=subject.getSubjectName()%>" name="subjectName"></td>
 			</tr>
 			<tr>
-				<th>시수</th>
+				<th>과목시수</th>
 				<td><input type="number" value="<%=subject.getSubjectTime()%>" name="subjectTime" min="0"></td>
 			</tr>
 			<tr>
@@ -63,11 +67,12 @@
 				<td><input type="text" value="<%=subject.getUpdatedate()%>" name="updatedate" readonly></td>
 			</tr>
 			<tr>
-				<th>작성일</th>
+				<th>등록일</th>
 				<td><input type="text" value="<%=subject.getCreatedate()%>" name="createdate" readonly></td>
 			</tr>
 		</table>
-		<button type="submit">수정하기</button>
+		<button class="btn btn-primary" type="submit">수정하기</button>
 	</form>
+</div>
 </body>
 </html>
